@@ -1,12 +1,17 @@
 {
   "name": "isonwebtoken",
-  "version": "1.0.0-beta.0",
+  "version": "1.0.0-beta.1",
   "description": "Implementation of web token, focused on minimizing the size of token.",
   "main": "index.js",
   "scripts": {
     "test": "node ./tests/test.js"
   },
-  "keywords": ["ison", "hmac", "rsa", "ecdsa"],
+  "keywords": [
+    "ison",
+    "hmac",
+    "rsa",
+    "ecdsa"
+  ],
   "author": "Hoon Kook Shim. <lscorpio0717@gmail.com>",
   "license": "MIT",
   "type": "module",
