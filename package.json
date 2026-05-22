@@ -1,10 +1,10 @@
 {
   "name": "isonwebtoken",
   "version": "1.0.0",
-  "description": "",
+  "description": "Implementation of web token, focused on minimizing the size of token.",
   "main": "index.js",
   "scripts": {
-    "test": "nodemon ./tests/test.js"
+    "test": "node ./tests/test.js"
   },
   "keywords": [],
   "author": "",
