@@ -1,0 +1,16 @@
+{
+  "name": "isonwebtoken",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "nodemon ./tests/test.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "type": "module",
+  "dependencies": {
+    "node-addon-api": "^8.7.0"
+  }
+}
