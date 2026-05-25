@@ -6,15 +6,20 @@
 void encode_int64(int64_t value, char* result_men) {
 
     if(value >= 0) result_men[0] = POSITIVE_MARKER;
-    else {
-        result_men[0] = NEGATIVE_MARKER;
-        value = ~value;
-    }
+	else if(value < 0) {
+		result_men[0] = NEGATIVE_MARKER;
+		value = ~value;
+	}
+
+	if(value == 0) {		// Which means the value == 0 or value == -1
+		result_men[1] = '\0';
+		return;
+	}
 	
 	int men_index = 1;
 
     // Set starting point.
-    int leading = __builtin_clzll(value);
+    int leading = __builtin_clzll(value) + 2;
     int shift_index = 60 - ((leading / 6) * 6);
 
     // Encoding.

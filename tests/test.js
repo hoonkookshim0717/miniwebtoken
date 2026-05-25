@@ -1,8 +1,15 @@
 import mwt from '../index.js';
 import { TTL_HOUR, SINCE_2026 } from '../index.js';
 
+const sampleObject = {
+	isWritable: true,
+	isReadable: true,
+	isExecutable: false,
+}
+
 const samplePayload = {
-	test0: 0,
+	truefalseTest: true,
+	falsetrueTest: false,
 	test_1: -1,
 	user_nickname: 'KilDong Hong',
 	user_group: -100,
@@ -13,9 +20,8 @@ const samplePayload = {
 	test63: 63,
 	test64: 64,
 	test011: 0.5,
-	test022: 0.25,
-	test023: 0.13,
 	test002: 0.4,
+	testUserReg: sampleObject,
 }
 
 const tokenEnv = mwt({
@@ -24,6 +30,7 @@ const tokenEnv = mwt({
 });
 
 tokenEnv.set(mwt.expIn(TTL_HOUR, SINCE_2026));
+tokenEnv.regUserObject('A', sampleObject);
 
 // In a login router or refresh router.
 const resultMwtStr = tokenEnv.sign(samplePayload);		

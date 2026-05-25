@@ -7,10 +7,10 @@ const tokenEnv = mwt({
 	secretKey: 'testpass',
 });
 
-const testObject = {}
+let testObject = {}
 
 // Positive test.
-for(let index = 0; index < 2048; index++) testObject['test' + index] = index;
+for(let index = 0; index < MAX_INTEGER; index++) testObject['test' + index] = index;
 
 let token = tokenEnv.sign(testObject);
 let revertedObject = tokenEnv.verify(token);
@@ -18,6 +18,21 @@ let revertedObject = tokenEnv.verify(token);
 let testPass = true;
 
 for(let index = 0; index < 2048; index++) {
+	if(testObject['test'+ index] !== revertedObject['test' + index]) {
+		testPass=false;
+		break;
+	}
+}
+
+testObject = {}
+
+// Negative test.
+for(let index = 0; index < MAX_INTEGER; index++) testObject['test' + index] = index * -1;
+
+token = tokenEnv.sign(testObject);
+revertedObject = tokenEnv.verify(token);
+
+for(let index = 0; index < MAX_INTEGER; index++) {
 	if(testObject['test'+ index] !== revertedObject['test' + index]) {
 		testPass=false;
 		break;
