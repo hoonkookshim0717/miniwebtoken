@@ -1,14 +1,14 @@
 {
   "name": "miniwebtoken",
-  "version": "1.0.0-beta.1",
+  "version": "1.0.0-beta.2",
   "description": "Implementation of a web token, focused on minimizing the size of token.",
   "main": "index.js",
   "scripts": {
     "test": "node ./tests/test.js"
   },
   "repository": {
-	"type": "git",
-	"url": "https://github.com/hoonkookshim0717/miniwebtoken"
+    "type": "git",
+    "url": "https://github.com/hoonkookshim0717/miniwebtoken"
   },
   "keywords": [
     "mwt",
