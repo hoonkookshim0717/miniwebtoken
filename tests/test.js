@@ -2,11 +2,20 @@ import mwt from '../index.js';
 import { TTL_HOUR, SINCE_2026 } from '../index.js';
 
 const samplePayload = {
-	user_id: 2583,
+	test0: 0,
+	test_1: -1,
 	user_nickname: 'KilDong Hong',
 	user_group: -100,
+	test0: 0,
 	user_roles: 187,
-	grade: 1.2,
+	test61: 61,
+	test62: 62,
+	test63: 63,
+	test64: 64,
+	test011: 0.5,
+	test022: 0.25,
+	test023: 0.13,
+	test002: 0.4,
 }
 
 const tokenEnv = mwt({
