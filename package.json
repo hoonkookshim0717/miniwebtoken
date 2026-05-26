@@ -1,6 +1,6 @@
 {
   "name": "miniwebtoken",
-  "version": "1.0.0-beta.3",
+  "version": "1.0.0-beta.4",
   "description": "Implementation of a web token, focused on minimizing the size of token.",
   "main": "index.js",
   "scripts": {
