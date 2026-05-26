@@ -2,10 +2,6 @@
 Implementation of web token, focused on minimizing the size of the token.
 
 ## 1. Characteristics.
-1. Signature(hs***/rs***/ps***/es***) and only values(not the name of the property of those) are stored in the token.
-4. Meta data like expiry timestamp are not mandatory. But ExpIn(TTL) or custome functions can be to be applied.
-5. User can set custom post-processing functions for each properties to construct output payload.
-6. User can save even an object to the token, without serialization.
 
 ### 1. Size of the token.
 Example of a token, using hs256 algorithm to sign:
@@ -13,7 +9,7 @@ Example of a token, using hs256 algorithm to sign:
 ```js
 /// test01.js
 
-import mwt from '../index.js';
+import mwt from 'miniwebtoken';
 
 const originalPayload = { user_id: 12345, user_name: 'KilDong Hong', user_roles: 0 };
 
@@ -36,17 +32,43 @@ This means the token body is just 22 bytes long.
 
 This is possible by removing names of the properties from the token, and not-stringifying numbers to strings, etc.
 
-### 2. Custom token value generation/interpretation.
+### 2. User can insert objects to the token, for only 2 bytes of token size.
+```js
+// test02.js
 
-By defining a setter/getter function, you can manage the way of storing a value into the token, or interpret the value from the token to create a new property.
+import mwt from 'miniwebtoken';
 
-### 3. User-registered objects can be inserted to the token.
+const sampleObject = { bbsReadable: true, bbsWritable: true, bbsAccessible: false };
+const originalPayload = { user_id: 12345, user_name: 'KilDong Hong', user_roles: 0, perm: sampleObject };
 
-Instead, names of the properties are stored in the tokenEnv object, and those are used for payload construction during verifying process.
-  By this way, security can be improved, by not showing the name of the properties.
-   By this feature, resulting payload can contain properties whose source didn't have, like 'isOwner' property(boolean) extracted from 'user_roles' property.
+const tokenEnv = mwt({ alg: 'hs256', secretKey: 'testpass' });
+tokenEnv.regUserObject('A', sampleObject);
 
-### 3. 
+const resultMwtStr = tokenEnv.sign(originalPayload);		
+console.log("Resulting mwt: ", resultMwtStr);          // Resulting mwt:  7nTNl4-G40SSToHNX9jtWHulAbnENBey0vTj1Z4amz8.DA5~S2lsRG9uZyBIb25n.)A
+console.log("Legnth of mwt: ", resultMwtStr.length);   // Legnth of mwt:  67
+
+const extractedPayload = tokenEnv.verify(resultMwtStr);
+
+console.log("The extracted payload: ", extractedPayload);
+/*
+The extracted payload:  {
+  user_id: 12345,
+  user_name: 'KilDong Hong',
+  user_roles: 0,
+  perm: { bbsReadable: true, bbsWritable: true, bbsAccessible: false }
+}
+*/
+```
+For the saving of the sampleObject, token size increased by 2 bytes.(The trailing ')A' indicate the object.)
+> Of course, token does not have actual object, just the reference to the object. You should keep the original object in your app.
+
+### 3. Pre-processing and Post-processing for the values in the token are possible.
+
+By defining a setter/getter function, you can manage the way of storing a value into the token, or interpreting the value from the token to create a new property.
+
+Inserting meta data(Data which does not appear on the payload, like expiration timestamp, etc) to the token is possible by this way, and you can set some kind of verification process here.
+
 ## 2. Usage
 
 ### 1. Install
@@ -95,7 +117,7 @@ const mwtStr = tokenEnv.sign({ foo: 'bar' });
 const result = tokenEnv.verify(mwtStr);
 ```
 
-## 1. Initializing
+### 3. Initializing
 
 ### Create tokenEnv instace.
 ```js
