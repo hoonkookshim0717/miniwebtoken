@@ -7,21 +7,23 @@ const sampleObject = {
 	isExecutable: false,
 }
 
+const testPrimitiveValue = null;
+
 const samplePayload = {
-	truefalseTest: true,
-	falsetrueTest: false,
-	test_1: -1,
-	user_nickname: 'KilDong Hong',
-	user_group: -100,
-	test0: 0,
-	user_roles: 187,
-	test61: 61,
-	test62: 62,
-	test63: 63,
-	test64: 64,
-	test011: 0.5,
-	test002: 0.4,
-	testUserReg: sampleObject,
+	trueTest: true,
+	falseTest: false,
+	undefinedTest: undefined,
+	nullTest: null,
+	emptryString: '',
+	normalString: 'HongKilDong',
+	negativaIntegerTest: -100,
+	positiveIntegerTest: 128,
+	shortfloat64Test: 0.25,
+	longfloat64Test: -0.3,
+	zeroTest: 0,
+	minusOneTest: -1,
+	testUserObj: sampleObject,
+	testPrimitiveValue: testPrimitiveValue
 }
 
 const tokenEnv = mwt({
@@ -30,7 +32,9 @@ const tokenEnv = mwt({
 });
 
 tokenEnv.set(mwt.expIn(TTL_HOUR, SINCE_2026));
-tokenEnv.regUserObject('A', sampleObject);
+tokenEnv.setUserCode('A', sampleObject);
+tokenEnv.setUserCode('B', undefined);
+
 tokenEnv.set("user_group", {
 	getter: (value, targetObj) => {
 		if(value > 0) targetObj.isWritable = false;
@@ -46,3 +50,5 @@ console.log("Legnth of mwt: ", resultMwtStr.length);
 // In a router.
 const recoveredObj = tokenEnv.verify(resultMwtStr);
 console.log("Recovered Object: ", recoveredObj);
+
+console.log("TestTry: ", Buffer.from('*AAA*', "base64url"));
