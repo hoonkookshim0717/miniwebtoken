@@ -122,15 +122,13 @@ const result = tokenEnv.verify(mwtStr);
 ```js
 import mwt from 'miniwebtoken';
 
-const options = {
-  alg: 'hs256',
-  secretKey: 'testpass',
-}
+const options = { alg: 'hs256', secretKey: 'testpass' }
 
-const tokenEnv = miniwebtoken(options)
+const tokenEnv = mwt(options)
 ```
 
-tokenEnv is a instance, which contains the data for issuing tokens and verifying it, and reconstructing a payload.
+tokenEnv is an instance, which contains the data for issuing tokens and verifying it, and reconstructing a payload.
+
 
 `options` should be provided, which contains the algorithm to be used to sign and secret keys.
 > `options` is used only to sign and verify the token. Expiration policies can be set differently, described below.
@@ -148,18 +146,32 @@ For PEM-encoded private key for RSA and ECDSA, privateKey and publicKey should b
 
 ### 4. Setting meta keys, or custom setter/getter functions.
 
-> `meta key` means the data which goes into the token, but doens't appear in payload constructed from it, like signature and expiration timestamp, etc.
+`meta key` means the data which goes into the token, but doens't appear in payload constructed from it, like signature and expiration timestamp, etc.
 
 ```js
 import mwt from 'miniwebtoken';
+import { TTL_HOUR, SINCE_2026 } from 'miniwebtoken';
 ...
 const tokenEnv = mwt({alg: 'hs256', secretKey: 'testpass' };
 
 tokenEnv.set(mwt.expIn(TTL_HOUR, SINCE_2026));
 ```
-mwt.expIn() function is a built-in function to implement TTL(TimeToLive).
-> TTL_HOUR is 3600, mean 1 hour. Token expiration time is set to 1 hour later from now.
-> SINCE_2026 is 1767225600, mean timestamp in seconds from epoch(1970-01-01). Setting this reduces the size of timestamp, by subtract the number from actual timestamp.
+
+mwt.expIn() function is a built-in meta key function to implement TTL(TimeToLive).
+> TTL_HOUR is 3600, meaning 1 hour. Token expiration time is set to 1 hour later from now.
+> SINCE_2026 is 1767225600, meaning timestamp in seconds at 2026-01-01 from epoch(1970-01-01). Setting this reduces the size of timestamp, by subtracting the timestamp from actual timestamp.
+
+User can define a setter function, or getter function and register it for specific properties.
+If a setter function is set, the value from the property are processed by the function, and the return value of the function goes into the token.
+If a getter function is set, the function can verify the value extracted from the token, process it, and modify resulting object.
+
+```js
+import mwt from 'miniwebtoken';
+import { TTL_HOUR, SINCE_2026 } from 'miniwebtoken';
+...
+const tokenEnv = mwt({alg: 'hs256', secretKey: 'testpass' };
+
+```
 
 ### 5. Signing a payload.
 
@@ -170,14 +182,14 @@ By initial running of .sign() function, all the names of properties of samplePay
 Afterwards, registered propetry names are to be used to sign a new payload, and to reconstruct payload during verification process.
 By this way, names of the properties don't need to be in the token, resulting small token size.
 
+> Note that you don't need to specify secret key, because it's in the tokenEnv object.
 > Note that, after initial running of sign() function, if a payload with a new property was given to be signed, the property will be discarded.
 > This means, miniwebtoken produces the token from only registered properties only.
 
 ### 6. Verifying a token and payload reconstruction.
 
 ```js
-const mwtStr = tokenEnv.sign(samplePayload);
-tokenEnv.verify(mwtStr);
+const payload = tokenEnv.verify(mwtStr);
 ```
 > Note that there is no need to provide secret key, as it's stored in the tokenEnv instace.
 
