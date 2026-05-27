@@ -1,3 +1,8 @@
+1.0.0-beta.4	/ 2026-05-27
+	Changed the name of the method regUserObj() to setUserCode().
+	Fixed the string checking procedure for setUserCode.
+	Changed the men code for true/false/null.
+
 
 1.0.0-beta.3	/ 2026-05-25
 	Corrected a bug(typo in base64 converstion table).
