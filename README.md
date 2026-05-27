@@ -7,61 +7,48 @@ Implementation of web token, focused on minimizing the size of the token.
 Example of a token, using hs256 algorithm to sign:
 
 ```js
-/// test01.js
-
 import mwt from 'miniwebtoken';
 
-const originalPayload = { user_id: 12345, user_name: 'KilDong Hong', user_roles: 0 };
+const originalPayload = { user_id: 12345, user_name: 'Kil Dong Hong', user_roles: 113 };
+const tokenEnv = mwt({ alg: 'hs256', secretKey: 'passKey' });
+const token = tokenEnv.sign(originalPayload);
+const payload = tokenEnv.verify(token);
 
-const tokenEnv = mwt({ alg: 'hs256', secretKey: 'testpass' });
-
-const resultMwtStr = tokenEnv.sign(originalPayload);
-
-console.log("Resulting mwt: ", resultMwtStr);			// Resulting mwt:  HKxTfDySYpzQJld7PJolG_Gc9HLWYlhWJcqErrW-Kl0.DA5~S2lsRG9uZyBIb25n.
-console.log("Legnth of mwt: ", resultMwtStr.length);	// Legnth of mwt:  65
-
-const extractedPayload = tokenEnv.verify(resultMwtStr);
-
-console.log("The extracted payload: ", extractedPayload);	// The extracted payload:  { user_id: 12345, user_name: 'KilDong Hong', user_roles: 0 }
-
+console.log(token);        // oT-WDRNw9uhHKeq2DJUnCZzL_rLAlt_f6a7P9NYnuyc.DA5~S2lsIERvbmcgSG9uZw.Bx
+console.log(token.length); // 69
+console.log(payload);      // { user_id: 12345, user_name: 'Kil Dong Hong', user_roles: 113 }
 ```
 
-The size of the token constructed from 'originalPayload' is only 65 bytes, including 43 bytes of signature.
+The size of the token constructed from 'originalPayload' is only 69 bytes, including 43 bytes of signature.
 
-This means the token body is just 22 bytes long.
+This means the token body is just 26 bytes long.
 
-This is possible by removing names of the properties from the token, and not-stringifying numbers to strings, etc.
-
-### 2. User can insert objects to the token, for only 2 bytes of token size.
+### 2. User can register anything(value or objects), and store it in the token for minimum of only 2 bytes of token size.
 ```js
-// test02.js
-
 import mwt from 'miniwebtoken';
 
-const sampleObject = { bbsReadable: true, bbsWritable: true, bbsAccessible: false };
-const originalPayload = { user_id: 12345, user_name: 'KilDong Hong', user_roles: 0, perm: sampleObject };
+const userSymbol = Symbol();
+const sampleObject = { bbsR: true, bbsW: true, bbsX: false };
 
+const originalPayload = { userSymbol, sampleObject };
 const tokenEnv = mwt({ alg: 'hs256', secretKey: 'testpass' });
-tokenEnv.regUserObject('A', sampleObject);
 
-const resultMwtStr = tokenEnv.sign(originalPayload);		
-console.log("Resulting mwt: ", resultMwtStr);          // Resulting mwt:  7nTNl4-G40SSToHNX9jtWHulAbnENBey0vTj1Z4amz8.DA5~S2lsRG9uZyBIb25n.)A
-console.log("Legnth of mwt: ", resultMwtStr.length);   // Legnth of mwt:  67
+tokenEnv.setUserCode('A', sampleObject);
+tokenEnv.setUserCode('B', userSymbol);
 
-const extractedPayload = tokenEnv.verify(resultMwtStr);
+const token = tokenEnv.sign(originalPayload);		
+const payload = tokenEnv.verify(token);
 
-console.log("The extracted payload: ", extractedPayload);
-/*
-The extracted payload:  {
-  user_id: 12345,
-  user_name: 'KilDong Hong',
-  user_roles: 0,
-  perm: { bbsReadable: true, bbsWritable: true, bbsAccessible: false }
-}
-*/
+console.log(token);          // uxwH7pjhcmcCsHSF5Sd6_qDsCNnprtNDamaM5crO17M)B)A
+console.log(token.length);   // 47
+console.log(payload);        // { userSymbol: Symbol(), sampleObject: { bbsR: true, bbsW: true, bbsX: false } }
 ```
-For the saving of the sampleObject, token size increased by 2 bytes.(The trailing ')A' indicate the object.)
-> Of course, token does not have actual object, just the reference to the object. You should keep the original object in your app.
+
+By setting user-defined codes and linking any values(primitive values or objects) to the code, token can have reference to the values.
+
+> Of course, the token does not have information about actual data(primitive values or objects), just the reference to the object.
+>
+> You should keep the original object in your app to re-construct the payload from the token.
 
 ### 3. Pre-processing and Post-processing for the values in the token are possible.
 
