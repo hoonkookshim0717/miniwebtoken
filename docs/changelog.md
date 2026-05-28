@@ -1,3 +1,9 @@
+1.0.0-beta.6
+	Updated error-handling, especially for token expired or invalid signature.
+	Added a built-in claim function, expAtMidnight()
+	Added option for tokenEnv: baseTime, and let the getter or setter function refer to it.
+	Update tokenEnv.set(). Enabled overwrting a individual getter/setter function, and appedning.
+
 1.0.0-beta.5	/ 2026-05-27
 	Update README.md
 

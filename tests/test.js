@@ -1,5 +1,5 @@
 import mwt from '../index.js';
-import { TTL_HOUR, SINCE_2026 } from '../index.js';
+import { TTL_HOUR } from '../index.js';
 
 const sampleObject = {
 	isWritable: true,
@@ -31,7 +31,7 @@ const tokenEnv = mwt({
 	secretKey: 'testpass',
 });
 
-tokenEnv.set(mwt.expIn(TTL_HOUR, SINCE_2026));
+tokenEnv.set(mwt.expIn(TTL_HOUR, mwt.SINCE_2026));
 tokenEnv.setUserCode('A', sampleObject);
 tokenEnv.setUserCode('B', undefined);
 
@@ -47,8 +47,17 @@ const resultMwtStr = tokenEnv.sign(samplePayload);
 console.log("Resulting mwt: ", resultMwtStr);
 console.log("Legnth of mwt: ", resultMwtStr.length);
 
+const faultyMwtStr = resultMwtStr + "BC";
+
 // In a router.
-const recoveredObj = tokenEnv.verify(resultMwtStr);
+let recoveredObj;
+
+try {
+	recoveredObj = tokenEnv.verify(faultyMwtStr);
+} catch(error) {
+	if(error === mwt.ERRORS.INVALID_SIGNATURE) console.log("Invalid signature detected.");
+	else if(error === mwt.ERRORS.TOKEN_EXPIRED) console.log("Refresh needed");
+}
 console.log("Recovered Object: ", recoveredObj);
 
 console.log("TestTry: ", Buffer.from('*AAA*', "base64url"));
