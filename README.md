@@ -237,8 +237,11 @@ try {
 }
 
 ```
+All errors are defined in miniwebtoken.ERRORS object, and the error above is just a string, not an instance of Error().
 
+All errors, users can use, are listed below in this README file.
 
+> Just comparing reference to a string is a lot faster than comparing 2 string entirely.
 
 
 ## 3. APIs
@@ -269,6 +272,19 @@ Array of supported algorithms. The following algorithms are currently supported.
 > `privateKey` and `publicKey` should be provided for RS***/PS***/ES*** algorithms.
 
 > `secretKey`, `privateKey`, `publicKey` is a string (utf-8 encoded), buffer, or KeyObject containing either the secret for HMAC algorithms, or the PEM encoded public key for RSA and ECDSA.
+
+### 2. Error Codes.
+List of comparable errors.
+| Code	|	thrown from	| Description	|
+|--|--|--|
+| NOT_TOKENIZABLE			| tokenEnv.sign()			| In case a property of payload has not-tokenizable values like symbol.	|
+| INVALID_KEYCOUNT			| tokenEnv.verify()			| In case the number of token elements are not as expected.				|
+| INVALID_SIGNATURE			| tokenEnv.verify()			| In case signature verification failed									|
+| RESERVED_MARKER			| tokenEnv.verify()			| In case token has a element in reserved area, not assigned yet		|
+| UNREGISTERED_USER_CODE	| tokenEnv.verify()			| In case token has a user-registered element, which is not registered.	|
+| UNREGISTERED_SP_CODE		| tokenEnv.verify()			| In case token has a special character element, which is not assigned.	|
+| TOKEN_EXPIRED				| getter() from expIn()		| In case token expired.												|
+| NOT_VALID_YET				| getter() from notBefore()	| In case token arrived too early.										|
 
 
 ## 4. TODOs
