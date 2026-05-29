@@ -29,9 +29,12 @@ const samplePayload = {
 const tokenEnv = mwt({
 	alg: 'hs256',
 	secretKey: 'testpass',
+	baseTimestamp: mwt.SINCE_2026,
 });
 
 tokenEnv.set(mwt.expIn(TTL_HOUR, mwt.SINCE_2026));
+tokenEnv.set(mwt.issuedAt("issued_at"));
+
 tokenEnv.setUserCode('A', sampleObject);
 tokenEnv.setUserCode('B', undefined);
 
