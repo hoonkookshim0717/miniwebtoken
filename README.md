@@ -1,6 +1,20 @@
 # miniwebtoken
 Implementation of web token, focused on minimizing the size of the token.
 
+## Basic concept.
+For statelessness, modern systems mainly use 'token system'.
+But it cause large amounts of data transmission, because **all the users** have to send token with their **every requests**.
+And for better statelessness, size of token should be increased to store necessary data for the user, like permissions, etc.
+
+This token reduces the size of the token, mainly by removing data like property names from the token.
+And token can have a (minimum) 2-bytes of references, which refer to the objects in your app, instead of storing entire conents of the object after stringifying.
+All the removed data resides in the app, not in the token.
+In addition, this token uses base64url-like semi-binary serialization process, instead of just stringifying objects, and which reduces the token size as well.
+
+The downside of this method is that, if contents of the payload is changed, token issued before the system change is not recoverable.
+But, modern system use access token & refresh token system, and lifetime of access token is very short, generally an hour or a day.
+So, updating the system will not cause big problem, because the earlier tokens should have been expired already.
+
 ## 1. Characteristics.
 
 ### 1. Size of the token.
