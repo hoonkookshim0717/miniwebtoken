@@ -223,7 +223,10 @@ miniwebtoken throw 2 kinds of errors.
 
 The one is the conventional way, `throw new Error(...)`, and the other is by `throw ERRORS.TOKEN_EXPIRED`.
 
-conventional way of throwing new Error() is used in the app
+Conventional 'new Error()' is drawn during initialization or setting, and it might need to update the code of your app.
+
+Important part is to check the result of the verify(), and provide some way of determining what to do for the app. It flows like this:
+
 ```js
 try {
 	tokenEnv.verify(accessToken);
