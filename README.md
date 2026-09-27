@@ -3,7 +3,9 @@ Implementation of web token, focused on minimizing the size of the token.
 
 ## Basic concept.
 For statelessness, modern systems mainly use 'token system'.
+
 But it cause large amounts of data transmission, because **all the users** have to send token with their **every requests**.
+
 And for better statelessness, size of token should be increased to store necessary data for the user, like permissions, etc.
 
 This token reduces the size of the token, mainly by removing data like property names from the token.
@@ -15,6 +17,7 @@ In addition, this token uses base64url-like semi-binary serialization process to
 
 The downside of this method is that, if contents of the payload is changed, token issued before the system change is not recoverable.
 But, modern system use access token & refresh token system, and lifetime of access token is very short, generally an hour or a day.
+
 So, updating the system will not cause big problem, because the earlier tokens should have been expired already. I suppose...
 
 ## 1. Characteristics.
@@ -23,31 +26,39 @@ So, updating the system will not cause big problem, because the earlier tokens s
 Example of a token, using hs256 algorithm to sign:
 
 ```js
+// tests/test01.js
 import mwt from 'miniwebtoken';
 
-const originalPayload = { user_id: 12345, user_name: 'Kil Dong Hong', user_roles: 113 };
+const originalPayload = { user_id: 12345, user_name: 'Kil Dong Hong', user_roles: 0 };
+
 const tokenEnv = mwt({ alg: 'hs256', secretKey: 'passKey' });
+tokenEnv.set('user_id', 'user_name', 'user_roles');
+
 const token = tokenEnv.sign(originalPayload);
 const payload = tokenEnv.verify(token);
 
-console.log(token);        // oT-WDRNw9uhHKeq2DJUnCZzL_rLAlt_f6a7P9NYnuyc.DA5~S2lsIERvbmcgSG9uZw.Bx
-console.log(token.length); // 69
-console.log(payload);      // { user_id: 12345, user_name: 'Kil Dong Hong', user_roles: 113 }
+console.log(token);        // HKx...
+console.log(token.length); // 65
+console.log(payload);      // { user_id: 12345, user_name: 'Kil Dong Hong', user_roles: 0 }
 ```
 
-The size of the token constructed from 'originalPayload' is only 69 bytes, including 43 bytes of signature.
+The size of the token constructed from 'originalPayload' is only 65 bytes, including 43 bytes of signature.
 
-This means the token body is just 26 bytes long.
+This means the token body is just 22 bytes long.
 
 ### 2. User can register anything(value or objects), and store it in the token for just 2 bytes.
+
 ```js
+// tests/test02.js
 import mwt from 'miniwebtoken';
 
 const userSymbol = Symbol();
 const sampleObject = { bbsR: true, bbsW: true, bbsX: false };
 
 const originalPayload = { userSymbol, sampleObject };
+
 const tokenEnv = mwt({ alg: 'hs256', secretKey: 'testpass' });
+tokenEnv.setKeys('userSymbol', 'sampleObject');
 
 tokenEnv.setUserCode('A', sampleObject);
 tokenEnv.setUserCode('B', userSymbol);
@@ -55,45 +66,90 @@ tokenEnv.setUserCode('B', userSymbol);
 const token = tokenEnv.sign(originalPayload);		
 const payload = tokenEnv.verify(token);
 
-console.log(token);          // uxwH7pjhcmcCsHSF5Sd6_qDsCNnprtNDamaM5crO17M)B)A
+console.log(token);          // uxw...
 console.log(token.length);   // 47
 console.log(payload);        // { userSymbol: Symbol(), sampleObject: { bbsR: true, bbsW: true, bbsX: false } }
 ```
 
 By setting a user-defined code and linking any value(primitive value or object) to the code, token can have reference to the value.
 
-> Of course, the token does not have information about actual data(primitive values or objects), just the reference to the object.
+> Of course, the token does not have information about actual data of the object, just the reference to the object.
 >
 > You should keep the original object in your app to re-construct the payload from the token.
 
 ### 3. Pre-processing and Post-processing for the values in the token are possible.
 
-By defining a setter/getter function, user can manage the way of storing a value into the token, or interpreting the value from the token to create a new property.
+By defining a setter/getter function for each properties, user can manage the way of storing a value into the token, or interpreting the value from the token to create a new property.
+
 Below is an example showing interpreting the value in the token and produce a new property in a resulting object.
 
+
 ```js
+// tests/test03.js
 import mwt from 'miniwebtoken';
 
 const originalPayload = { user_id: 12345, user_name: 'Kil Dong Hong', user_roles: 12001 };
-const tokenEnv = mwt({ alg: 'hs256', secretKey: 'testpass' });
 
-tokenEnv.set('user_roles', {
-	getter(value, targetObj) {
-		if(value > 10000) targetObj.isAdmin = true;
-		else targetObj.isAdmin = false;
-	}
-})
+const tokenEnv = mwt({ alg: 'hs256', secretKey: 'testpass' });
+tokenEnv.setKeys(...Object.keys(originalPayload));
+
+tokenEnv.setGetterFor('user_roles', function (value, targetObj) {
+	if(value > 10000) targetObj.isAdmin = true;
+	else targetObj.isAdmin = false;
+	return value;
+});
+
 const token = tokenEnv.sign(originalPayload);		
+
 const payload = tokenEnv.verify(token);
 
 console.log(token);         // mts6mRU18fAXKHfJ28J61T-zmAJq2WdeT_WLCQlNOsk.DA5~S2lsIERvbmcgSG9uZw.C7h
 console.log(token.length);  // 70
+
 console.log(payload);       // { user_id: 12345, user_name: 'Kil Dong Hong', isAdmin: true }
 ```
 
-> Inserting meta data(Data which does not appear on the payload, like expiration timestamp, etc) to the token is possible by setting setter function, and verifying the data is also possible by setting getter function.
+> There are some built-in functions to implement expiration, like maxAge(), minAge(), expiresAt(), activatesAt().
 
-> There are some built-in functions to implement expiration, like expIn().
+```js
+// tests/test04.js
+const samplePayload = {
+	user_name: 'KilDong Hong',
+}
+
+const tokenEnv = mwt({
+	alg: 'hs256',
+	secretKey: 'testpass',
+});
+tokenEnv.setKeys(...Object.keys(samplePayload));
+tokenEnv.setKeys(mwt.maxAge(mwt.DAY, 'maxAge')); // this token expires 1 day after being signed.
+
+const resultMwtStr = tokenEnv.sign(samplePayload);		
+console.log("Resulting mwt: ", resultMwtStr);
+console.log("Legnth of mwt: ", resultMwtStr.length);
+
+const recoveredObj = tokenEnv.verify(resultMwtStr);
+console.log("Recovered Object: ", recoveredObj);
+```
+
+metaData(maxAge in the following example) is inserted to token, and throws an error if the token had expired, can can be removed in the recovered payload.
+```js
+const samplePayload = {
+	user_name: 'KilDong Hong',
+}
+
+const tokenEnv = mwt({
+	alg: 'hs256',
+	secretKey: 'testpass',
+});
+tokenEnv.setKeys(...Object.keys(samplePayload));
+tokenEnv.setKeys(mwt.maxAge(mwt.DAY)) // this token expires 1 day after being signed.
+
+const resultMwtStr = tokenEnv.sign(samplePayload);		
+
+const recoveredObj = tokenEnv.verify(resultMwtStr);
+console.log(recoveredObj); // { user_name: 'KilDong Hong' }
+```
 
 ## 2. Usage
 
@@ -109,14 +165,14 @@ $ npm install miniwebtoken
 import mwt from 'miniwebtoken';
 
 const tokenEnv = mwt({ alg: 'hs256', secretKey: 'testpass' });
+tokenEnv.setKeys('prop1', 'prop2');
 ```
 
 tokenEnv is an instance, which contains the data for issuing tokens and verifying it(signing algorithm, keys for signing and verification).
 
 It also keep the data like names of the properties, how to process the values(getter/setter functions), user-registered objects, etc.
 
-> Unlike jsonwebtoken, tokenEnv instance need to be maintained in your app, as it is used everytime a payload is signed or token is verified.
-> As the data which is removed from the token resides in the instance.
+> Unlike jsonwebtoken, tokenEnv instance need to be maintained in your app, as it is used everytime a payload is signed or token is verified, as the data which is removed from the token resides in the instance.
 
 `options` with `alg` property and `secretKey` or `privateKey/publicKey` property should be provided.
 
@@ -132,31 +188,32 @@ It also keep the data like names of the properties, how to process the values(ge
 
 > For PEM-encoded private key for RSA and ECDSA, privateKey and publicKey should be provided.
 
-`options`:
-
 ### 3. Setting meta keys, or custom setter/getter functions.
 
-`meta key` means the data which goes into the token, but doens't appear in payload constructed from it, like signature and expiration timestamp, etc.
+`meta key` means the data which goes into the token, and can be used to verify or process the data. meta keys can be appear on the recovered payload, or deleted in the recovered payload, based on your setting.
 
 ```js
 import mwt from 'miniwebtoken';
-import { TTL_HOUR, SINCE_2026 } from 'miniwebtoken';
 ...
-const tokenEnv = mwt({alg: 'hs256', secretKey: 'testpass' };
+const tokenEnv = mwt({alg: 'hs256', secretKey: 'testpass', baseTimestamp: mwt.SINCE_2026 };
 
-tokenEnv.set(mwt.expIn(TTL_HOUR, SINCE_2026));
+tokenEnv.setKeys('user_id', 'user_roles');
+tokenEnv.setKeys(mwt.maxAge(mwt.DAY_HOUR, 'maxAge', mwt.activatesAt(Math.floor(Date.now() / 1000) + mwt.DAY));
+...
+
 ```
 
-mwt.expIn() function is a built-in meta key function to implement TTL(TimeToLive).
+> mwt.maxAge() function is a built-in meta key function to implement TTL(TimeToLive).
+
 > TTL_HOUR is 3600, meaning 1 hour. Token expiration time is set to 1 hour later from now.
 
-> SINCE_2026 is 1767225600, meaning timestamp in seconds at 2026-01-01 from epoch(1970-01-01).
->
+> 'mwt.SINCE_2026' is 1767225600, meaning timestamp in seconds at 2026-01-01 from epoch(1970-01-01).
+
 > Setting this reduces the size of timestamp, by subtracting the number from current timestamp from epoch.
 
-> setter() function, which is returned from expIn(), inserts modified-expiry-timestamp to the token,
+> setter() function from maxAge() inserts modified-expiry-timestamp to the token,
 
-> getter() function, which is also returned from the expIn(), evaluates the value from the token, and throw an error or pass it.
+> getter() function also from maxAge() evaluates the value from the token, and throw an error or pass it.
 
 ### 4. Setting user code(s).
 
@@ -273,9 +330,9 @@ Array of supported algorithms. The following algorithms are currently supported.
 
 > `secretKey`, `privateKey`, `publicKey` is a string (utf-8 encoded), buffer, or KeyObject containing either the secret for HMAC algorithms, or the PEM encoded public key for RSA and ECDSA.
 
-* `baseTimestamp` : SINCE_EPOCH, SINCE_2000, SINCE_2020, SINCE_2026 is possible.(All is properties of miniwebtoken).
+* `baseTimestamp` : SINCE_EPOCH, SINCE_2000, SINCE_2020, SINCE_2026 is possible.(All are properties of miniwebtoken).
 
-  All above are timestamp in seconds at specified year 1st January, and can be used to minimize token size.
+  All above are timestamp in seconds at 1st January of specified year, and can be used to minimize token size.
 
   tokenEnv instance stores the timestamp in internal cache, and setter function can use it(subtract it from real timestamp) to reduce token size.
 
@@ -291,12 +348,54 @@ List of comparable errors.
 | RESERVED_MARKER			| tokenEnv.verify()			| In case token has a element in reserved area, not assigned yet		|
 | UNREGISTERED_USER_CODE	| tokenEnv.verify()			| In case token has a user-registered element, which is not registered.	|
 | UNREGISTERED_SP_CODE		| tokenEnv.verify()			| In case token has a special character element, which is not assigned.	|
-| TOKEN_EXPIRED				| getter() from expIn()		| In case token expired.												|
-| NOT_VALID_YET				| getter() from notBefore()	| In case token arrived too early.										|
 
+// At tokenEnv constructor
+OPTION_NOT_PROVIDED		| "Mandatory properties: 'alg' and ('secretKey' or 'privateKey/publicKey' pair).",
+
+// At tokenEnv.setUserCode()
+INVALID_ARG_FOR_SET_USER_CODE: "A code for user registry should be a string, consists of characters A~Z, a~z, 0~9, '-' and '_'",
+USER_CODE_ALREADY_REGISTERED: "Already registered user code: ",
+
+// At tokenEnv.setKeys()
+INVALID_ARG_SETKEYS: 'Argument for setKeys() should be a string or a function(which returns a function which returns a new Key object)',
+INVALID_FN_FOR_SETKEYS: 'If a function is given to setKeys(), that function should return a function which returns a new Key object',
+
+// At Key manipulating.
+INVALID_KEY_ELEMENT: 'Valid arguments for Key() : string | function | object',
+SETTER_NOT_FUNCTION: "'setter' should be a 'function'.",
+GETTER_NOT_FUNCTION: "'getter' should be a 'function'.'",
+
+// At tokenEnv.verify().
+INVALID_KEYCOUNT: "Malformed token. Number of keys registered on tokenEnv object and keys in the token does not match.",
+
+// During encoding.
+NOT_TOKENIZABLE: "Given value is not a tokenizable value. Given value is: ",
+
+// During decoding.
+UNREGISTERED_SP_CODE: "Unregistered special character code exist in the token: ",
+RESERVED_MARKER: "Token has reserved marker, which should not have appeard.",
+UNREGISTERD_USER_CODE: "Unregistered user code exist in the token: ",
+
+// From built-in key functions.
+MAXAGE_USAGE: "Usage: maxAge(ageInSec[, keyName]), ",
+MINAGE_USAGE: "Usage: minAge(ageInSec[, keyName]), ",
+INVALID_ARG_AGEINSEC: "ageInSec should be an integer, meaning second.",
+
+EXPIRESAT_USAGE: "Usage: expiresAt(timestampInSec[, keyName]), ",
+ACTIVATESAT_USAGE: "Usage: activatesAt(timestampInSec[, keyName]), ",
+INVALID_ARG_TIMESTAMPINSEC: "timestampInSec should be an integer, meaning second.",
+
+INVALID_ARG_KEYNAME: "keyName should be a string.",
+
+ISSUEDAT_USAGE: "Usage: issuedAt(keyName), keyName should be a string.",
+
+| Errors which can be caused by users. |
+| INVALID_SIGNATURE | tokenEnv.verify()	|	Signature verification failed. |
+| TOKEN_EXPIRED		| key function 'maxAge()', 'expiresAt()'	|	Expired token.	|
+| NOT_VALID_YET		| key function 'activatesAt()', 'minAge()'	|	Token not valid yet.	|
 
 ## 4. TODOs
-
+Update api.md
 
 ## 5. Issue Reporting
 

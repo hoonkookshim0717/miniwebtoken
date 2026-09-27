@@ -1,15 +1,19 @@
 import mwt from '../index.js';
 
-const sampleObject = { bbsReadable: true, bbsWritable: true, bbsAccessible: false };
-const originalPayload = { user_id: 12345, user_name: 'KilDong Hong', user_roles: 0, perm: sampleObject };
+const userSymbol = Symbol();
+const sampleObject = { bbsR: true, bbsW: true, bbsX: false };
+
+const originalPayload = { userSymbol, sampleObject };
 
 const tokenEnv = mwt({ alg: 'hs256', secretKey: 'testpass' });
-tokenEnv.regUserObject('A', sampleObject);
+tokenEnv.setKeys('userSymbol', 'sampleObject');
 
-const resultMwtStr = tokenEnv.sign(originalPayload);		
-console.log("Resulting mwt: ", resultMwtStr);
-console.log("Legnth of mwt: ", resultMwtStr.length);
+tokenEnv.setUserCode('A', sampleObject);
+tokenEnv.setUserCode('B', userSymbol);
 
-const extractedPayload = tokenEnv.verify(resultMwtStr);
+const token = tokenEnv.sign(originalPayload);		
+const payload = tokenEnv.verify(token);
 
-console.log("The extracted payload: ", extractedPayload);
+console.log(token);          // uxwH7pjhcmcCsHSF5Sd6_qDsCNnprtNDamaM5crO17M)B)A
+console.log(token.length);   // 47
+console.log(payload);        // { userSymbol: Symbol(), sampleObject: { bbsR: true, bbsW: true, bbsX: false } }

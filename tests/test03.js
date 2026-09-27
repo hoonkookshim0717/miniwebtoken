@@ -1,25 +1,21 @@
 import mwt from '../index.js';
 
-const samplePayload = {
-	user_group: 50,
-}
+const originalPayload = { user_id: 12345, user_name: 'Kil Dong Hong', user_roles: 12001 };
 
-const tokenEnv = mwt({
-	alg: 'hs256',
-	secretKey: 'testpass',
+const tokenEnv = mwt({ alg: 'hs256', secretKey: 'testpass' });
+tokenEnv.setKeys(...Object.keys(originalPayload));
+
+tokenEnv.setGetterFor('user_roles', function (value, targetObj) {
+	if(value > 10000) targetObj.isAdmin = true;
+	else targetObj.isAdmin = false;
+	return value;
 });
 
-tokenEnv.set("user_group", {
-	getter: (value, targetObj) => {
-		if(value > 0) targetObj.isWritable = false;
-		else targetObj.isWritable = true;
-	}
-});
+const token = tokenEnv.sign(originalPayload);		
 
-const resultMwtStr = tokenEnv.sign(samplePayload);		
-console.log("Resulting mwt: ", resultMwtStr);
-console.log("Legnth of mwt: ", resultMwtStr.length);
+const payload = tokenEnv.verify(token);
 
-// In a router.
-const recoveredObj = tokenEnv.verify(resultMwtStr);
-console.log("Recovered Object: ", recoveredObj);
+console.log(token);         // mts6mRU18fAXKHfJ28J61T-zmAJq2WdeT_WLCQlNOsk.DA5~S2lsIERvbmcgSG9uZw.C7h
+console.log(token.length);  // 70
+
+console.log(payload);       // { user_id: 12345, user_name: 'Kil Dong Hong', isAdmin: true }

@@ -9,7 +9,7 @@ const tokenEnv = mwt({
 	secretKey: 'testpass',
 });
 tokenEnv.setKeys(...Object.keys(samplePayload));
-tokenEnv.setKeys(mwt.maxAge(mwt.DAY, 'maxAge')); // this token expires 1 day after being signed.
+tokenEnv.setKeys(mwt.maxAge(mwt.DAY)) // this token expires 1 day after being signed.
 
 const resultMwtStr = tokenEnv.sign(samplePayload);		
 console.log("Resulting mwt: ", resultMwtStr);

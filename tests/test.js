@@ -1,5 +1,4 @@
 import mwt from '../index.js';
-import { TTL_HOUR, SINCE_2026 } from '../index.js';
 
 const sampleObject = {
 	isWritable: true,
@@ -14,6 +13,7 @@ const samplePayload = {
 	falseTest: false,
 	undefinedTest: undefined,
 	nullTest: null,
+	NaNTest: NaN,
 	emptryString: '',
 	normalString: 'HongKilDong',
 	negativaIntegerTest: -100,
@@ -23,42 +23,46 @@ const samplePayload = {
 	zeroTest: 0,
 	minusOneTest: -1,
 	testUserObj: sampleObject,
-	testPrimitiveValue: testPrimitiveValue
+	testPrimitiveValue: testPrimitiveValue,
 }
 
+// Create tokenEnv instance.
 const tokenEnv = mwt({
 	alg: 'hs256',
 	secretKey: 'testpass',
-	baseTimestamp: SINCE_2026,
+	baseTimestamp: mwt.SINCE_2026,
 });
 
-tokenEnv.set(mwt.expIn(TTL_HOUR));
-tokenEnv.set(mwt.issuedAt("issued_at"));
+const keys = Object.keys(samplePayload);
 
+// Register basic property names.
+tokenEnv.setKeys(...keys);
+
+// Register built-in key functions.
+tokenEnv.setKeys(mwt.issuedAt('issuedAt'));
+tokenEnv.setKeys(mwt.maxAge(mwt.HOUR, 'maxAge'));
+tokenEnv.setKeys(mwt.minAge(0, 'minAge'));
+tokenEnv.setKeys(mwt.expiresAt(Math.floor(Date.now() / 1000) + 10, 'expiresAt'));
+tokenEnv.setKeys(mwt.activatesAt(Math.floor(Date.now() / 1000) - 10, 'activatesAt'));
+
+// Register several user-defined codes.
 tokenEnv.setUserCode('A', sampleObject);
 tokenEnv.setUserCode('B', undefined);
 
-tokenEnv.set("user_group", {
-	getter: (value, targetObj) => {
-		if(value > 0) targetObj.isWritable = false;
-		else targetObj.isWritable = true;
-	}
-});
-
-// In a login router or refresh router.
+// Signing a token.
 const resultMwtStr = tokenEnv.sign(samplePayload);		
+
 console.log("Resulting mwt: ", resultMwtStr);
 console.log("Legnth of mwt: ", resultMwtStr.length);
 
-// In a router.
+// Verifying and recovering the payload.
 let recoveredObj;
 
 try {
 	recoveredObj = tokenEnv.verify(resultMwtStr);
 } catch(error) {
-	if(error === mwt.ERRORS.INVALID_SIGNATURE) console.log("Invalid signature detected.");
-	else if(error === mwt.ERRORS.TOKEN_EXPIRED) console.log("Refresh needed");
+	console.log("An error occured: ", error);
 }
-console.log("Recovered Object: ", recoveredObj);
 
-console.log("TestTry: ", Buffer.from('*AAA*', "base64url"));
+console.log("tokenEnv.envSettings: ", tokenEnv.envSettings);
+console.log("Recovered Object: ", recoveredObj);
