@@ -339,18 +339,16 @@ Array of supported algorithms. The following algorithms are currently supported.
   And, getter function should re-calculate(add it from extracted timestamp) to recover acturl timestamp.
 
 ### 2. Error Codes.
-List of comparable errors.
+List of errors which need to be fixed.
 | Code	|	thrown from	| Description	|
 |--|--|--|
+| OPTION_NOT_PROVIDED		| tokenEnv constructor	| Mandatory properties: 'alg' and ('secretKey' or 'privateKey/publicKey' pair).
 | NOT_TOKENIZABLE			| tokenEnv.sign()			| In case a property of payload has not-tokenizable values like symbol.	|
 | INVALID_KEYCOUNT			| tokenEnv.verify()			| In case the number of token elements are not as expected.				|
 | INVALID_SIGNATURE			| tokenEnv.verify()			| In case signature verification failed									|
 | RESERVED_MARKER			| tokenEnv.verify()			| In case token has a element in reserved area, not assigned yet		|
 | UNREGISTERED_USER_CODE	| tokenEnv.verify()			| In case token has a user-registered element, which is not registered.	|
 | UNREGISTERED_SP_CODE		| tokenEnv.verify()			| In case token has a special character element, which is not assigned.	|
-
-// At tokenEnv constructor
-OPTION_NOT_PROVIDED		| "Mandatory properties: 'alg' and ('secretKey' or 'privateKey/publicKey' pair).",
 
 // At tokenEnv.setUserCode()
 INVALID_ARG_FOR_SET_USER_CODE: "A code for user registry should be a string, consists of characters A~Z, a~z, 0~9, '-' and '_'",
@@ -362,11 +360,6 @@ INVALID_FN_FOR_SETKEYS: 'If a function is given to setKeys(), that function shou
 
 // At Key manipulating.
 INVALID_KEY_ELEMENT: 'Valid arguments for Key() : string | function | object',
-SETTER_NOT_FUNCTION: "'setter' should be a 'function'.",
-GETTER_NOT_FUNCTION: "'getter' should be a 'function'.'",
-
-// At tokenEnv.verify().
-INVALID_KEYCOUNT: "Malformed token. Number of keys registered on tokenEnv object and keys in the token does not match.",
 
 // During encoding.
 NOT_TOKENIZABLE: "Given value is not a tokenizable value. Given value is: ",
@@ -376,7 +369,7 @@ UNREGISTERED_SP_CODE: "Unregistered special character code exist in the token: "
 RESERVED_MARKER: "Token has reserved marker, which should not have appeard.",
 UNREGISTERD_USER_CODE: "Unregistered user code exist in the token: ",
 
-// From built-in key functions.
+Errors from built-in key functions.
 MAXAGE_USAGE: "Usage: maxAge(ageInSec[, keyName]), ",
 MINAGE_USAGE: "Usage: minAge(ageInSec[, keyName]), ",
 INVALID_ARG_AGEINSEC: "ageInSec should be an integer, meaning second.",
@@ -389,7 +382,9 @@ INVALID_ARG_KEYNAME: "keyName should be a string.",
 
 ISSUEDAT_USAGE: "Usage: issuedAt(keyName), keyName should be a string.",
 
-| Errors which can be caused by users. |
+Errors which can be caused by users.
+| CODE	| Thrown from | Description |
+|--|--|--|
 | INVALID_SIGNATURE | tokenEnv.verify()	|	Signature verification failed. |
 | TOKEN_EXPIRED		| key function 'maxAge()', 'expiresAt()'	|	Expired token.	|
 | NOT_VALID_YET		| key function 'activatesAt()', 'minAge()'	|	Token not valid yet.	|
