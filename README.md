@@ -339,48 +339,26 @@ Array of supported algorithms. The following algorithms are currently supported.
   And, getter function should re-calculate(add it from extracted timestamp) to recover acturl timestamp.
 
 ### 2. Error Codes.
-List of errors which need to be fixed.
+List of errors which is drawn by Error().
 | Code	|	thrown from	| Description	|
 |--|--|--|
-| OPTION_NOT_PROVIDED		| tokenEnv constructor	| Mandatory properties: 'alg' and ('secretKey' or 'privateKey/publicKey' pair).
+| OPTION_NOT_PROVIDED			| tokenEnv constructor	| Mandatory properties: 'alg' and ('secretKey' or 'privateKey/publicKey' pair).	|
+| KEYNAME_NOT_EXISTS	| setSetterFor / setGetterFor	| Given keyName does not exist in the tokenEnv instance.	|
+| USER_CODE_ALREADY_REGISTERED	| setUserCode()	| Given code is already registered in user-registered code queue.	|
+| CUSTOM_VAL_ALREADY_REGISTERED	| setUserCode()	| Given value is already registered in user-registered value queue.	|
+| INVALID_ARG_FOR_SET_USER_CODE	| setUserCode()	| A code for user registry should be a string, consists of characters A~Z, a~z, 0~9, '-' and '_'",	|
 | NOT_TOKENIZABLE			| tokenEnv.sign()			| In case a property of payload has not-tokenizable values like symbol.	|
-| INVALID_KEYCOUNT			| tokenEnv.verify()			| In case the number of token elements are not as expected.				|
-| INVALID_SIGNATURE			| tokenEnv.verify()			| In case signature verification failed									|
-| RESERVED_MARKER			| tokenEnv.verify()			| In case token has a element in reserved area, not assigned yet		|
-| UNREGISTERED_USER_CODE	| tokenEnv.verify()			| In case token has a user-registered element, which is not registered.	|
-| UNREGISTERED_SP_CODE		| tokenEnv.verify()			| In case token has a special character element, which is not assigned.	|
 
-// At tokenEnv.setUserCode()
-INVALID_ARG_FOR_SET_USER_CODE: "A code for user registry should be a string, consists of characters A~Z, a~z, 0~9, '-' and '_'",
-USER_CODE_ALREADY_REGISTERED: "Already registered user code: ",
-
-// At tokenEnv.setKeys()
-INVALID_ARG_SETKEYS: 'Argument for setKeys() should be a string or a function(which returns a function which returns a new Key object)',
-INVALID_FN_FOR_SETKEYS: 'If a function is given to setKeys(), that function should return a function which returns a new Key object',
-
-// At Key manipulating.
-INVALID_KEY_ELEMENT: 'Valid arguments for Key() : string | function | object',
-
-// During encoding.
-NOT_TOKENIZABLE: "Given value is not a tokenizable value. Given value is: ",
-
-// During decoding.
-UNREGISTERED_SP_CODE: "Unregistered special character code exist in the token: ",
-RESERVED_MARKER: "Token has reserved marker, which should not have appeard.",
-UNREGISTERD_USER_CODE: "Unregistered user code exist in the token: ",
-
-Errors from built-in key functions.
-MAXAGE_USAGE: "Usage: maxAge(ageInSec[, keyName]), ",
-MINAGE_USAGE: "Usage: minAge(ageInSec[, keyName]), ",
-INVALID_ARG_AGEINSEC: "ageInSec should be an integer, meaning second.",
-
-EXPIRESAT_USAGE: "Usage: expiresAt(timestampInSec[, keyName]), ",
-ACTIVATESAT_USAGE: "Usage: activatesAt(timestampInSec[, keyName]), ",
-INVALID_ARG_TIMESTAMPINSEC: "timestampInSec should be an integer, meaning second.",
-
-INVALID_ARG_KEYNAME: "keyName should be a string.",
-
-ISSUEDAT_USAGE: "Usage: issuedAt(keyName), keyName should be a string.",
+List of type errors.
+| Code	| thrown from	| Description	|
+|--|--|--|
+| INVALID_ARG_SETKEYS	| tokenEnv.setKeys()	| Argument for setKeys() should be a string or a function(which returns a function which returns a new Key object)',
+| INVALID_FN_FOR_SETKEYS	| tokenEnv.setKeys()	| If a function is given to setKeys(), that function should return a function which returns a new Key object',
+| MAXAGE_USAGE			| maxAge() key function			| Usage: maxAge(ageInSec[, keyName]), ageInSec: integer, keyName: string.	|
+| MINAGE_USAGE			| minAge() key function			| Usage: minAge(ageInSec[, keyName]), ageInSec: integer, keyName: string"	|
+| EXPIRES_AT_USAGE		| expiresAt() key function		| Usage: expiresAt(timestampInSec[, keyName]) |
+| ACTIVATES_AT_USAGE	| activatesAt() key function	| Usage: activatesAt(timestampInSec[, keyName])	|
+| ISSUEDAT_USAGE		| issuedAt() key function		| Usage: issuedAt(keyName), keyName: string.	|
 
 Errors which can be caused by users.
 | CODE	| Thrown from | Description |
@@ -389,6 +367,13 @@ Errors which can be caused by users.
 | TOKEN_EXPIRED		| key function 'maxAge()', 'expiresAt()'	|	Expired token.	|
 | NOT_VALID_YET		| key function 'activatesAt()', 'minAge()'	|	Token not valid yet.	|
 
+Errors which can occur in case a client send outdated tokens, which is not compatible with current one.
+| CODE	| Thrown from | Description |
+|--|--|--|
+| INVALID_KEYCOUNT			| tokenEnv.verify()			| In case the number of token elements are not as expected.				|
+| RESERVED_MARKER			| tokenEnv.verify()			| In case token has a element in reserved area, not assigned yet		|
+| UNREGISTERED_SP_CODE		| tokenEnv.verify()			| In case token has a special character element, which is not assigned.	|
+| UNREGISTERED_USER_CODE	| tokenEnv.verify()			| In case token has a user-registered element, which is not registered.	|
 ## 4. TODOs
 Update api.md
 

@@ -1,6 +1,7 @@
 import TokenEnv from './lib/tokenEnv.js';
 import MEN from './lib/men.js';
 import Key from './lib/key.js';
+import ERRORS from './lib/errors.js';
 
 function miniWebToken(settings) {
 	return new TokenEnv(settings);
@@ -18,6 +19,8 @@ miniWebToken.minAge = Key.minAge;
 miniWebToken.expiresAt = Key.expiresAt;
 miniWebToken.activatesAt = Key.activatesAt;
 miniWebToken.issuedAt = Key.issuedAt;
+
+miniWebToken.ERRORS = ERRORS;
 
 // Constans for built-in key functions.
 miniWebToken.HOUR = Key.HOUR;
