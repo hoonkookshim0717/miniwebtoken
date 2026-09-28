@@ -6,7 +6,7 @@
 import mwt from 'miniwebtoken';
 ...
 
-const tokenEnv = mwt('alg: 'hs256', secretKey: 'testpass', baseTimestamp: mwt.SINCE_2026)
+const tokenEnv = mwt('alg: 'hs256', secretKey: 'testpass', baseTimestamp: mwt.SINCE_2026);
 ```
 From now on, the tokenEnv instance maintains the basic data to sign a payload to generate a token string, and recover the data from the token string.
 
@@ -14,19 +14,28 @@ From now on, the tokenEnv instance maintains the basic data to sign a payload to
 
 ### tokenEnv.setKeys(propertyName[, ...])
 
+```js
+import mwt from 'miniwebtoken';
+...
+
+const tokenEnv = mwt('alg: 'hs256', secretKey: 'testpass', baseTimestamp: mwt.SINCE_2026);
+tokenEnv.setKeys('user_id', 'user_role');
+```
+
 * `propertyName`: string | function
 	string: This will be a name of a property.
 	function: A function which returns a new Key Object.
-* Returns: tokenEnv itself, for method chaining.
+* `Returns`: tokenEnv itself, for method chaining.
 
+On the example above, the tokenEnv instance will produce tokens with 2 properties with signing, and produce an object with 2 properties, vice versa.
 
 
 ### tokenEnv.setSetterFor(KeyName, setterFn)
 
-* keyName: String.
-* setterFn: A function, which receives 'value' as an argument.
+* `keyName`: String.
+* `setterFn`: A function, which receives 'value' as an argument.
 
-* Returns: tokenEnv instance itself, for method chaining.
+* `Returns`: tokenEnv instance itself, for method chaining.
 
 ```js
 tokenEnv.setKeys('user_id', 'user_role');
@@ -44,8 +53,8 @@ On the example above, the argument 'value' is original value of the property fro
 
 ### tokenEnv.setGetterFor(KeyName, getterFn)
 
-* keyName: String.
-* getterFn: A function, which receives the (value, targetObj) as arguments.
+* `keyName`: String.
+* `getterFn`: A function, which receives the (value, targetObj) as arguments.
 
 * Returns: tokenEnv instance itself, for method chaining.
 
@@ -78,12 +87,14 @@ For instance, if you register character 'A' for an object, and the value of a pr
 
 ### tokenEnv.sign(payload)
 
-* payload: An Object.
-* Returns: string.
+* `payload`: An Object.
+
+* `Returns`: string.
   
 ### tokenEnv.verify(tokenStr);
-* tokenStr: string
-* Returns: object
+* `tokenStr`: string
+
+* `Returns`: object
 
 > Note that, `key` is not required to verify a token, as it is already stored in the tokenEnv instance.
 
@@ -96,9 +107,14 @@ tokenEnv.setKeys('user_id', 'user_name', 'user_role', mwt.maxAge(mwt.DAY));
 On the example above, the timestamp information goes into the token with signing, and used to check validity of the token during verification.
 And the expiry timestamp does not appear on the output payload, because 'keyName' is not given.
 
+Key function is a function, which returns a returns which return a new Key object.
+Key function is executed on the initialization procedure, and the inner function which return a new Key object is delivered to setKeys() function.
+And then, the inner function is executed in the setKeys() function and the resulting Key object is finally set to the tokenEnv.
+This is to binide the setter/getter functions to the corresponding tokenEnv instance.
+
 ### maxAge(ageInSec[, keyName])
-* ageInSec: Number, an integer
-* keyName: String.
+* `ageInSec`: Number, an integer
+* `keyName`: String.
   
 If keyName is given, the property with name and value appears on the output payload.
 If keyName is missing, the property does not appear  on the output payload.
@@ -107,8 +123,8 @@ Token expires after ageInSec from the time of signing.
 During verify(), it will throw an error if token is expired: ERRORS.TOKEN_EXPIRED.
 
 ### minAge(ageInSec[, keyName])
-* ageInSec: Number, an integer
-* keyName: String.
+* `ageInSec`: Number, an integer
+* `keyName`: String.
   
 If keyName is given, the property with name and value appears on the output payload.
 If keyName is missing, the property does not appear  on the output payload.
