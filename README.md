@@ -361,6 +361,7 @@ List of type errors.
 | ISSUEDAT_USAGE		| issuedAt() key function		| Usage: issuedAt(keyName), keyName: string.	|
 
 Errors which can be caused by users.
+These errors are thrown as a string. Just comparing the reference to the string runs a lot faster than comparing entire string.
 | CODE	| Thrown from | Description |
 |--|--|--|
 | INVALID_SIGNATURE | tokenEnv.verify()	|	Signature verification failed. |
@@ -368,6 +369,7 @@ Errors which can be caused by users.
 | NOT_VALID_YET		| key function 'activatesAt()', 'minAge()'	|	Token not valid yet.	|
 
 Errors which can occur in case a client send outdated tokens, which is not compatible with current one.
+These errors are thrown as a string. Just comparing the reference to the string runs a lot faster than comparing entire string.
 | CODE	| Thrown from | Description |
 |--|--|--|
 | INVALID_KEYCOUNT			| tokenEnv.verify()			| In case the number of token elements are not as expected.				|
