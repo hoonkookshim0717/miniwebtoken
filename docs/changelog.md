@@ -1,3 +1,8 @@
+2.0.0-beta.1
+	Breaking changes had been made.
+	Basic concept is identical, but initializing process have been changed a lot.
+	Please refer to the readme.md file.
+
 1.0.0-beta.6
 	Updated error-handling, especially for token expired or invalid signature.
 	Added a built-in claim function, expAtMidnight()
